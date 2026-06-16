@@ -20,7 +20,7 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 
 ## Technology Stack
 * **Language:** Java 25
-* **Framework:** Spring Boot 3.x
+* **Framework:** Spring Boot 4.1.0
 * **AI Framework:** Spring AI
 * **Vector Database:** Qdrant
 * **Cache:** Redis
@@ -32,13 +32,13 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 
 ## 🏃‍♂️ Sprint Tracker
 
-### Sprint 1: Foundation Setup 🔄 [IN PROGRESS]
-- [ ] Create Spring Boot project (Java 25, Maven)
-- [ ] Install/Configure Docker
-- [ ] Run Qdrant locally via `docker-compose.yml`
-- [ ] Configure Spring AI and OpenAI provider in `application.properties`
-- [ ] Verify embedding generation (Integration Test)
-- [ ] Verify vector store connectivity (Integration Test)
+### Sprint 1: Foundation Setup ✅ [COMPLETE]
+- [x] Create Spring Boot project (Java 25, Maven)
+- [x] Install/Configure Docker
+- [x] Run Qdrant locally via `docker-compose.yml`
+- [x] Configure Spring AI and OpenAI provider in `application.properties`
+- [x] Verify embedding generation (Integration Test)
+- [x] Verify vector store connectivity (Integration Test)
 
 ### Sprint 2: Document Ingestion Pipeline ⬜ [PLANNED]
 - [ ] Create PDF upload endpoint
