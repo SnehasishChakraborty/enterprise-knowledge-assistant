@@ -6,8 +6,8 @@
 ---
 
 ## 📍 Current State tracker
-**Active Sprint:** Sprint 1 - Foundation Setup
-**Current Task:** Bootstrapping the Spring Boot app, configuring Docker for Qdrant, and verifying API connections.
+**Active Sprint:** Sprint 3 - Embeddings & Vector Storage
+**Current Task:** Configuring Spring AI EmbeddingModel, mapping DocumentChunks to Qdrant points, and establishing the database storage collection.
 
 ---
 
@@ -22,6 +22,7 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 * **Language:** Java 25
 * **Framework:** Spring Boot 4.1.0
 * **AI Framework:** Spring AI
+* **Tokenization Engine:** JTokkit (CL100K_BASE / Tiktoken)
 * **Vector Database:** Qdrant
 * **Cache:** Redis
 * **Security:** Spring Security + JWT
@@ -40,18 +41,20 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 - [x] Verify embedding generation (Integration Test)
 - [x] Verify vector store connectivity (Integration Test)
 
-### Sprint 2: Document Ingestion Pipeline ⬜ [PLANNED]
-- [ ] Create PDF upload endpoint
-- [ ] Parse PDFs using PDFBox
-- [ ] Extract raw text
-- [ ] Design chunking strategy with overlap
-- [ ] Add metadata extraction (Name, Date, Page, Type)
+### Sprint 2: Document Ingestion Pipeline ✅ [COMPLETE]
+- [x] Create PDF upload endpoint (`POST /api/v1/documents/upload`)
+- [x] Parse PDFs page-by-page using Apache PDFBox to preserve source metadata
+- [x] Implement structural magic-byte screening (`%PDF`) to prevent MIME-spoofing attacks
+- [x] Enforce execution guardrails (15MB file-size limit, encryption checks) to prevent OOM errors
+- [x] Integrate JTokkit for real model-aware BPE token counting (`CL100K_BASE`)
+- [x] Design token-based sliding window chunking with an explicit 100-token overlap to prevent word-slicing
+- [x] Configure centralized `@RestControllerAdvice` exception mappings for uniform REST error responses
 
-### Sprint 3: Embeddings & Vector Storage ⬜ [PLANNED]
-- [ ] Generate embeddings
-- [ ] Store vectors in Qdrant
-- [ ] Associate metadata with vectors
-- [ ] Verify retrieval manually
+### Sprint 3: Embeddings & Vector Storage ⬜ [IN PROGRESS]
+- [ ] Inject Spring AI `EmbeddingModel` into service layer
+- [ ] Map `DocumentChunk` objects into vector embeddings
+- [ ] Connect ingestion output to Qdrant payload collections
+- [ ] Verify contextual retrieval manually or via integration tests
 
 ### Sprint 4: Basic RAG Pipeline ⬜ [PLANNED]
 - [ ] Build Ask endpoint
