@@ -50,7 +50,7 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 - [x] Design token-based sliding window chunking with an explicit 100-token overlap to prevent word-slicing
 - [x] Configure centralized `@RestControllerAdvice` exception mappings for uniform REST error responses
 
-### Sprint 3: Embeddings & Vector Storage ⬜ [IN PROGRESS]
+### Sprint 3: Embeddings & Vector Storage 1.0 ⬜ [IN PROGRESS]
 - [ ] Inject Spring AI `EmbeddingModel` into service layer
 - [ ] Map `DocumentChunk` objects into vector embeddings
 - [ ] Connect ingestion output to Qdrant payload collections
@@ -105,8 +105,20 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 - [ ] Track user activity & log retrieval results
 - [ ] Capture response latency & token usage
 
-### Sprint 14: Production Readiness ⬜ [PLANNED]
-- [ ] Dockerize application
-- [ ] Docker Compose setup for all services
-- [ ] Health checks & Actuator integration
-- [ ] Externalized configuration (Environment profiles)
+### Sprint 14: Production Readiness & Containerization ⬜ [PLANNED]
+- [ ] Dockerize application (Write multi-stage Dockerfile)
+- [ ] Docker Compose setup for local multi-service testing
+- [ ] Health checks & Spring Boot Actuator integration
+- [ ] Externalized environment profiles (`application-prod.properties`)
+
+### Sprint 15: Angular UI Integration ⬜ [PLANNED]
+- [ ] Bootstrap Angular application (with standalone components)
+- [ ] Build drag-and-drop document upload interface
+- [ ] Implement streaming chat component using Server-Sent Events (SSE)
+- [ ] Add an "Informed Source Inspector" side-panel to view cited Qdrant chunks
+
+### Sprint 16: Cloud Deployment & CI/CD ⬜ [PLANNED]
+- [ ] Provision managed cluster on Qdrant Cloud
+- [ ] Set up live PostgreSQL and Redis instances on Render/Railway
+- [ ] Configure automatic GitHub Deployment webhooks
+- [ ] Secure production API keys/secrets using platform environment variables
