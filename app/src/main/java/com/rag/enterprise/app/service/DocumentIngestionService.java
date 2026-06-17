@@ -50,7 +50,8 @@ public class DocumentIngestionService {
              PDDocument document = Loader.loadPDF(inputStream.readAllBytes())) {
 
             if (document.isEncrypted()) {
-                throw new InvalidDocumentException("Cannot process password-protected or encrypted PDF: " + filename);
+                document.setAllSecurityToBeRemoved(true);
+//                throw new InvalidDocumentException("Cannot process password-protected or encrypted PDF: " + filename);
             }
 
             PDFTextStripper stripper = new PDFTextStripper();

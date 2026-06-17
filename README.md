@@ -1,21 +1,21 @@
 # Enterprise Knowledge Assistant (Modern RAG 2.0)
 
-**Developer:** Snehasish Chakraborty
+**Developer:** Snehasish Chakraborty  
 **Goal:** Build a production-grade AI application specializing in AI-powered backend systems using Java and Spring Boot.
 
 ---
 
-## 📍 Current State tracker
-**Active Sprint:** Sprint 3 - Embeddings & Vector Storage
-**Current Task:** Configuring Spring AI EmbeddingModel, mapping DocumentChunks to Qdrant points, and establishing the database storage collection.
+## 📍 Current State Tracker
+**Active Sprint:** Sprint 4 - Basic RAG Pipeline  
+**Current Task:** Implementing a semantic query retrieval service, building a Chat/Ask REST controller, and engineering context-grounded LLM prompts.
 
 ---
 
 ## Architecture Evolution
-**Phase 1 (Target): Naive RAG**
+**Phase 1 (Target): Naive RAG**  
 User Query -> Embedding -> Vector Search -> Top-K Chunks -> LLM Prompt -> Answer
 
-**Phase 2 (Target): Modern RAG 2.0**
+**Phase 2 (Target): Modern RAG 2.0**  
 User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compression -> LLM Generation -> Answer Validation -> Response with Citations
 
 ## Technology Stack
@@ -50,18 +50,20 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 - [x] Design token-based sliding window chunking with an explicit 100-token overlap to prevent word-slicing
 - [x] Configure centralized `@RestControllerAdvice` exception mappings for uniform REST error responses
 
-### Sprint 3: Embeddings & Vector Storage 1.0 ⬜ [IN PROGRESS]
-- [ ] Inject Spring AI `EmbeddingModel` into service layer
-- [ ] Map `DocumentChunk` objects into vector embeddings
-- [ ] Connect ingestion output to Qdrant payload collections
-- [ ] Verify contextual retrieval manually or via integration tests
+### Sprint 3: Embeddings & Vector Storage ✅ [COMPLETE]
+- [x] Provision a decoupled `VectorStorageService` adhering to Domain-Driven Design boundaries
+- [x] Implement database-agnostic portability using the industry-standard Spring AI `VectorStore` abstraction
+- [x] Automate runtime vector schema generation (`spring.ai.vectorstore.qdrant.initialize-schema=true`)
+- [x] Connect the document ingestion pipeline to a local Qdrant collection via reactive gRPC network channels
+- [x] Suppress internal non-fatal library logging anomalies (`org.apache.fontbox`) to ensure production log cleanliness
+- [x] Manually verify vector payload structure and lineage fields inside the Qdrant local dashboard
 
-### Sprint 4: Basic RAG Pipeline ⬜ [PLANNED]
-- [ ] Build Ask endpoint
-- [ ] Generate query embeddings
-- [ ] Retrieve Top-K chunks
-- [ ] Construct prompts
-- [ ] Generate grounded responses
+### Sprint 4: Basic RAG Pipeline ⬜ [IN PROGRESS]
+- [ ] Inject Spring AI `VectorStore` query capabilities into a retrieval service
+- [ ] Build user-facing ask/chat endpoint (`POST /api/v1/chat/ask`)
+- [ ] Generate runtime query text embeddings automatically
+- [ ] Retrieve semantic Top-K document chunks from Qdrant
+- [ ] Construct context-grounded prompt templates and execute LLM generation
 
 ### Sprint 5: Query Rewriting ⬜ [PLANNED]
 - [ ] Introduce query rewriting (Expand ambiguous questions)
