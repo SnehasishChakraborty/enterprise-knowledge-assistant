@@ -6,17 +6,15 @@
 ---
 
 ## 📍 Current State Tracker
-**Active Sprint:** Sprint 4 - Basic RAG Pipeline  
-**Current Task:** Implementing a semantic query retrieval service, building a Chat/Ask REST controller, and engineering context-grounded LLM prompts.
+**Active Sprint:** Sprint 6 - Hybrid Retrieval  
+**Current Task:** Implementing a parallel database-driven Keyword Search (Full-Text/BM25) stream to run alongside the Qdrant vector store channel.
 
 ---
 
 ## Architecture Evolution
-**Phase 1 (Target): Naive RAG**  
-User Query -> Embedding -> Vector Search -> Top-K Chunks -> LLM Prompt -> Answer
+**Phase 1 (Complete): Naive RAG** User Query -> Embedding -> Vector Search -> Top-K Chunks -> LLM Prompt -> Answer
 
-**Phase 2 (Target): Modern RAG 2.0**  
-User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compression -> LLM Generation -> Answer Validation -> Response with Citations
+**Phase 2 (Active): Modern RAG 2.0** User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compression -> LLM Generation -> Answer Validation -> Response with Citations
 
 ## Technology Stack
 * **Language:** Java 25
@@ -58,21 +56,22 @@ User Query -> Query Rewriting -> Hybrid Retrieval -> Reranking -> Context Compre
 - [x] Suppress internal non-fatal library logging anomalies (`org.apache.fontbox`) to ensure production log cleanliness
 - [x] Manually verify vector payload structure and lineage fields inside the Qdrant local dashboard
 
-### Sprint 4: Basic RAG Pipeline ⬜ [IN PROGRESS]
-- [ ] Inject Spring AI `VectorStore` query capabilities into a retrieval service
-- [ ] Build user-facing ask/chat endpoint (`POST /api/v1/chat/ask`)
-- [ ] Generate runtime query text embeddings automatically
-- [ ] Retrieve semantic Top-K document chunks from Qdrant
-- [ ] Construct context-grounded prompt templates and execute LLM generation
+### Sprint 4: Basic RAG Pipeline ✅ [COMPLETE]
+- [x] Expose diagnostic endpoints utilizing a clean JSON request body payload DTO (`DiagnosticQueryRequest`)
+- [x] Execute programmatic similarity searches bypassing framework abstract conversions using a calibrated similarity threshold
+- [x] Map extracted database payloads directly into uniform Spring AI `Document` data objects
+- [x] Inject Spring AI’s `ChatModel` to orchestrate context-isolated prompting templates
+- [x] Confirm end-to-end grounded generation via Postman without model hallucination or leakage
 
-### Sprint 5: Query Rewriting ⬜ [PLANNED]
-- [ ] Introduce query rewriting (Expand ambiguous questions)
-- [ ] Generate optimized search queries
+### Sprint 5: Query Rewriting ✅ [COMPLETE]
+- [x] Create a standalone `QueryRewriterService` using a specialized system prompt for orchestration preprocessing
+- [x] Clean up conversational noise and conversational filler text out of incoming queries via low-token fast LLM evaluation passes
+- [x] Resolve missing pronouns and vague references dynamically before passing inputs to the vector layer
+- [x] Maintain precise original query text configurations when targeting the generation stage to preserve client formatting intents
 
-### Sprint 6: Hybrid Retrieval ⬜ [PLANNED]
-- [ ] Implement vector search
-- [ ] Implement keyword search
-- [ ] Merge retrieval results & tune weights
+### Sprint 6: Hybrid Retrieval ⬜ [IN PROGRESS]
+- [ ] Implement a full-text keyword search service to capture exact alphanumeric terms (error codes, filenames)
+- [ ] Orchestrate parallel execution flows combining Qdrant semantic matches and exact-string keyword matches
 
 ### Sprint 7: Reranking ⬜ [PLANNED]
 - [ ] Evaluate reranker options
