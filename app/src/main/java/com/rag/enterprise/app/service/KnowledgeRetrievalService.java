@@ -53,7 +53,7 @@ public class KnowledgeRetrievalService {
                                         .build())
                                 .build())
                         .setUsing("text-dense") // Target the Dense index
-                        .setLimit(10) // Grab top 10 conceptual matches
+                        .setLimit(20) // Grab top 20 conceptual matches
                         .build())
 
                 // --- STREAM 2: Keyword Search ---
@@ -68,7 +68,7 @@ public class KnowledgeRetrievalService {
                                         .build())
                                 .build())
                         .setUsing("text-sparse") // Target the Sparse index
-                        .setLimit(10) // Grab top 10 exact keyword matches
+                        .setLimit(20) // Grab top 20 exact keyword matches
                         .build())
 
                 // --- THE FUSION ENGINE ---
@@ -76,7 +76,7 @@ public class KnowledgeRetrievalService {
                         // Fusion is a simple enum, no builder required
                         .setFusion(Points.Fusion.RRF)
                         .build())
-                .setLimit(5) // Final output size after fusion
+                .setLimit(10) // Final output size after fusion
                 .setWithPayload(Points.WithPayloadSelector.newBuilder().setEnable(true).build())
                 .build();
 

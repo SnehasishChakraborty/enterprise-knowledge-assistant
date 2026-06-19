@@ -14,12 +14,14 @@ public class RAGGenerationService {
     private final KnowledgeRetrievalService retrievalService;
     private final ChatModel chatModel;
     private final QueryRewriterService queryRewriterService;
+    private final CohereRerankerService rerankerService;
 
     // Spring AI automatically autoconfigures and injects your OpenAI ChatModel bean here
-    public RAGGenerationService(KnowledgeRetrievalService retrievalService, ChatModel chatModel, QueryRewriterService queryRewriterService) {
+    public RAGGenerationService(KnowledgeRetrievalService retrievalService, ChatModel chatModel, QueryRewriterService queryRewriterService, CohereRerankerService rerankerService) {
         this.retrievalService = retrievalService;
         this.chatModel = chatModel;
         this.queryRewriterService = queryRewriterService;
+        this.rerankerService = rerankerService;
     }
 
     public String generateAnswer(String userQuery) {
@@ -33,12 +35,16 @@ public class RAGGenerationService {
 
         // 2. Pass the optimized string to our new Hybrid Retrieval Engine
         // (This now returns a clean List<String> instead of Spring AI Documents)
-        List<String> contexts = retrievalService.retrieveChunks(optimizedSearchQuery);
+        List<String> rawChunks = retrievalService.retrieveChunks(optimizedSearchQuery);
 
-        // 3. Flatten the retrieved strings into a single continuous context block
-        String structuralContext = String.join("\n\n---\n\n", contexts);
+        // 3. 🧠 SPRINT 7 ADDITION: Cross-Encoder Reranking
+        // Filter those 10 chunks down to the 3 most contextually perfect chunks
+        List<String> perfectChunks = rerankerService.rerankContext(userQuery, rawChunks);
 
-        // 4. Define an enterprise-grade prompt layout forcing grounding guardrails
+        // 4. Flatten the retrieved strings into a single continuous context block
+        String structuralContext = String.join("\n\n---\n\n", perfectChunks);
+
+        // 5. Define an enterprise-grade prompt layout forcing grounding guardrails
         String promptInstructions = """
                 You are a secure Enterprise Knowledge Assistant. 
                 Answer the user's question accurately using ONLY the provided supporting documentation context below.
@@ -54,14 +60,14 @@ public class RAGGenerationService {
                 GENERATE CONTEXT-GROUNDED ANSWER:
                 """;
 
-        // 5. Inject variables cleanly using Spring AI's native PromptTemplate engine
+        // 6. Inject variables cleanly using Spring AI's native PromptTemplate engine
         PromptTemplate template = new PromptTemplate(promptInstructions);
         Prompt compiledPrompt = template.create(Map.of(
                 "context", structuralContext.isBlank() ? "No corporate context found for this query." : structuralContext,
                 "question", userQuery
         ));
 
-        // 6. Fire the call to OpenAI and return the clean generative response block
+        // 7. Fire the call to OpenAI and return the clean generative response block
         return chatModel.call(compiledPrompt).getResult().getOutput().getText();
     }
 }

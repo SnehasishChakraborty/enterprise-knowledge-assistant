@@ -6,8 +6,8 @@
 ---
 
 ## 📍 Current State Tracker
-**Active Sprint:** Sprint 7 - Cross-Encoder Reranking  
-**Current Task:** Evaluating whether to inject a secondary Machine Learning reranker (Local HuggingFace vs. API-based Cohere) on top of the RRF fusion engine.
+**Active Sprint:** Sprint 9 - Grounding & Citations  
+**Current Task:** Implementing structured metadata reflection to return exact document filenames and page numbers within the JSON response payload.
 
 ---
 
@@ -22,6 +22,7 @@
 * **AI Framework:** Spring AI
 * **Tokenization Engine:** JTokkit (CL100K_BASE / Tiktoken)
 * **Vector Database:** Qdrant (Native Hybrid / RRF Enabled)
+* **Reranking Engine:** Cohere Rerank API (`rerank-english-v3.0`)
 * **Cache & Memory:** Redis
 * **Security:** Spring Security + JWT
 * **Database:** PostgreSQL
@@ -75,21 +76,21 @@
 - [x] Configure Qdrant database schema to accept `text-dense` and `text-sparse` named vectors
 - [x] Execute Reciprocal Rank Fusion (RRF) natively on the database using `Points.FusionAlgorithm.RRF`
 
-### Sprint 7: Reranking ⬜ [PLANNED]
-- [ ] Evaluate reranker options (Cross-Encoders vs. LLM-as-a-Judge)
-- [ ] Integrate secondary reranking layer over the RRF output
-- [ ] Reorder retrieved results based on direct query-to-chunk contextual scoring
+### Sprint 7: Reranking ✅ [COMPLETE]
+- [x] Evaluate reranker options (Cross-Encoders vs. LLM-as-a-Judge)
+- [x] Integrate cloud-based Cohere Rerank API utilizing Spring Boot's modern `RestClient`
+- [x] Intercept top 10 Qdrant hybrid results and filter down to the top 3 contextually perfect chunks based on direct query-to-chunk scoring
 
-### Sprint 8: Context Compression ⬜ [PLANNED]
+### Sprint 8: Context Compression ⬜ [DEFERRED/PLANNED]
 - [ ] Summarize retrieved context
 - [ ] Remove irrelevant sections / optimize token usage
 
-### Sprint 9: Grounding & Citations ⬜ [PLANNED]
-- [ ] Force grounded prompting
-- [ ] Generate source references
-- [ ] Return citation metadata in JSON response
+### Sprint 9: Grounding & Citations ⬜ [IN PROGRESS]
+- [ ] Force grounded prompting configurations
+- [ ] Refactor generation signatures to capture and propagate original document metadata fields
+- [ ] Return citation metadata arrays explicitly in JSON responses for UI consumption
 
-### Sprint 10: Conversational Memory & Session Management 🆕 [PLANNED]
+### Sprint 10: Conversational Memory & Session Management ⬜ [PLANNED]
 - [ ] Implement Spring AI's `ChatMemory` abstraction (starting in-memory)
 - [ ] Inject `MessageChatMemoryAdvisor` into the generation layer to maintain contextual history
 - [ ] Update the `QueryRewriterService` signature to accept a Conversation ID for stateful pronoun resolution
