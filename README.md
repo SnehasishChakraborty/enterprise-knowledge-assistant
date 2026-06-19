@@ -6,8 +6,8 @@
 ---
 
 ## 📍 Current State Tracker
-**Active Sprint:** Sprint 6 - Hybrid Retrieval  
-**Current Task:** Implementing a parallel database-driven Keyword Search (Full-Text/BM25) stream to run alongside the Qdrant vector store channel.
+**Active Sprint:** Sprint 7 - Cross-Encoder Reranking  
+**Current Task:** Evaluating whether to inject a secondary Machine Learning reranker (Local HuggingFace vs. API-based Cohere) on top of the RRF fusion engine.
 
 ---
 
@@ -21,8 +21,8 @@
 * **Framework:** Spring Boot 4.1.0
 * **AI Framework:** Spring AI
 * **Tokenization Engine:** JTokkit (CL100K_BASE / Tiktoken)
-* **Vector Database:** Qdrant
-* **Cache:** Redis
+* **Vector Database:** Qdrant (Native Hybrid / RRF Enabled)
+* **Cache & Memory:** Redis
 * **Security:** Spring Security + JWT
 * **Database:** PostgreSQL
 * **Containerization:** Docker & Docker Compose
@@ -69,14 +69,16 @@
 - [x] Resolve missing pronouns and vague references dynamically before passing inputs to the vector layer
 - [x] Maintain precise original query text configurations when targeting the generation stage to preserve client formatting intents
 
-### Sprint 6: Hybrid Retrieval ⬜ [IN PROGRESS]
-- [ ] Implement a full-text keyword search service to capture exact alphanumeric terms (error codes, filenames)
-- [ ] Orchestrate parallel execution flows combining Qdrant semantic matches and exact-string keyword matches
+### Sprint 6: Hybrid Retrieval ✅ [COMPLETE]
+- [x] Implement a custom BM25 `KeywordSparseEncoderService` using 32-bit integer token hashing
+- [x] Refactor `VectorStorageService` to inject dual-vectors (Dense + Sparse) natively via gRPC
+- [x] Configure Qdrant database schema to accept `text-dense` and `text-sparse` named vectors
+- [x] Execute Reciprocal Rank Fusion (RRF) natively on the database using `Points.FusionAlgorithm.RRF`
 
 ### Sprint 7: Reranking ⬜ [PLANNED]
-- [ ] Evaluate reranker options
-- [ ] Integrate reranking layer
-- [ ] Reorder retrieved results
+- [ ] Evaluate reranker options (Cross-Encoders vs. LLM-as-a-Judge)
+- [ ] Integrate secondary reranking layer over the RRF output
+- [ ] Reorder retrieved results based on direct query-to-chunk contextual scoring
 
 ### Sprint 8: Context Compression ⬜ [PLANNED]
 - [ ] Summarize retrieved context
@@ -87,38 +89,43 @@
 - [ ] Generate source references
 - [ ] Return citation metadata in JSON response
 
-### Sprint 10: Answer Validation ⬜ [PLANNED]
+### Sprint 10: Conversational Memory & Session Management 🆕 [PLANNED]
+- [ ] Implement Spring AI's `ChatMemory` abstraction (starting in-memory)
+- [ ] Inject `MessageChatMemoryAdvisor` into the generation layer to maintain contextual history
+- [ ] Update the `QueryRewriterService` signature to accept a Conversation ID for stateful pronoun resolution
+
+### Sprint 11: Answer Validation ⬜ [PLANNED]
 - [ ] Implement self-check mechanism
 - [ ] Compare answers against context
 - [ ] Reject unsupported claims (Mitigate hallucinations)
 
-### Sprint 11: Security ⬜ [PLANNED]
+### Sprint 12: Security ⬜ [PLANNED]
 - [ ] Configure Spring Security
 - [ ] Implement JWT authentication
 - [ ] Define user roles (Admin vs. User)
 
-### Sprint 12: Redis Integration ⬜ [PLANNED]
-- [ ] Cache repeated responses
-- [ ] Define cache invalidation rules
+### Sprint 13: Redis Integration ⬜ [PLANNED]
+- [ ] Cache repeated responses & define cache invalidation rules
+- [ ] Migrate `InMemoryChatMemory` to distributed Redis session store for scalable chat history
 - [ ] Track cache hit ratios
 
-### Sprint 13: Audit Logging ⬜ [PLANNED]
+### Sprint 14: Audit Logging ⬜ [PLANNED]
 - [ ] Track user activity & log retrieval results
 - [ ] Capture response latency & token usage
 
-### Sprint 14: Production Readiness & Containerization ⬜ [PLANNED]
+### Sprint 15: Production Readiness & Containerization ⬜ [PLANNED]
 - [ ] Dockerize application (Write multi-stage Dockerfile)
 - [ ] Docker Compose setup for local multi-service testing
 - [ ] Health checks & Spring Boot Actuator integration
 - [ ] Externalized environment profiles (`application-prod.properties`)
 
-### Sprint 15: Angular UI Integration ⬜ [PLANNED]
+### Sprint 16: Angular UI Integration ⬜ [PLANNED]
 - [ ] Bootstrap Angular application (with standalone components)
 - [ ] Build drag-and-drop document upload interface
 - [ ] Implement streaming chat component using Server-Sent Events (SSE)
 - [ ] Add an "Informed Source Inspector" side-panel to view cited Qdrant chunks
 
-### Sprint 16: Cloud Deployment & CI/CD ⬜ [PLANNED]
+### Sprint 17: Cloud Deployment & CI/CD ⬜ [PLANNED]
 - [ ] Provision managed cluster on Qdrant Cloud
 - [ ] Set up live PostgreSQL and Redis instances on Render/Railway
 - [ ] Configure automatic GitHub Deployment webhooks

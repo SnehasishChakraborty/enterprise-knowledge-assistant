@@ -3,12 +3,10 @@ package com.rag.enterprise.app.service;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.document.Document;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class RAGGenerationService {
@@ -33,13 +31,12 @@ public class RAGGenerationService {
         System.out.println("Original Query: " + userQuery);
         System.out.println("Rewritten Search Query: " + optimizedSearchQuery);
 
-        // 2. Pass the optimized string to the database instead of the raw input
-        List<Document> contexts = retrievalService.retrieveContext(optimizedSearchQuery);
+        // 2. Pass the optimized string to our new Hybrid Retrieval Engine
+        // (This now returns a clean List<String> instead of Spring AI Documents)
+        List<String> contexts = retrievalService.retrieveChunks(optimizedSearchQuery);
 
-        // 3. Flatten the retrieved chunk documents into a single continuous context block
-        String structuralContext = contexts.stream()
-                .map(Document::getText)
-                .collect(Collectors.joining("\n\n---\n\n"));
+        // 3. Flatten the retrieved strings into a single continuous context block
+        String structuralContext = String.join("\n\n---\n\n", contexts);
 
         // 4. Define an enterprise-grade prompt layout forcing grounding guardrails
         String promptInstructions = """

@@ -1,47 +1,98 @@
 package com.rag.enterprise.app.service;
-import org.springframework.ai.document.Document;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.vectorstore.VectorStore;
+
+import io.qdrant.client.QdrantClient;
+import io.qdrant.client.grpc.Points;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class KnowledgeRetrievalService {
 
-    private final VectorStore vectorStore;
+    private final QdrantClient qdrantClient;
+    private final EmbeddingModel embeddingModel;
+    private final KeywordSparseEncoderService sparseEncoder;
 
-    // Inject the same autoconfigured Qdrant VectorStore from Sprint 3
-    public KnowledgeRetrievalService(VectorStore vectorStore) {
-        this.vectorStore = vectorStore;
+    // Must match the collection we just rebuilt
+    private static final String COLLECTION_NAME = "enterprise_knowledge";
+
+    public KnowledgeRetrievalService(QdrantClient qdrantClient,
+                                     EmbeddingModel embeddingModel,
+                                     KeywordSparseEncoderService sparseEncoder) {
+        this.qdrantClient = qdrantClient;
+        this.embeddingModel = embeddingModel;
+        this.sparseEncoder = sparseEncoder;
     }
 
-    /**
-     * Executes a semantic vector search against Qdrant to find chunks
-     * that conceptually match the user's question.
-     */
-    public List<Document> retrieveContext(String userQuery) {
-        if (userQuery == null || userQuery.isBlank()) {
-            return List.of();
+    public List<String> retrieveChunks(String userQuery) {
+
+        // 1. Generate the Dense Vector (Semantic Meaning)
+        float[] denseVectorArray = embeddingModel.embed(userQuery);
+        List<Float> denseVector = new ArrayList<>();
+        for (float v : denseVectorArray) {
+            denseVector.add(v);
         }
 
-        /*
-         * SearchRequest is the industry-standard builder for defining RAG boundaries.
-         * It allows us to control exactly how strict and how wide our search is.
-         */
-        SearchRequest request = SearchRequest.builder()
-                .query(userQuery)
-                .topK(4)                       // Retrieve the 4 most relevant chunks
-                .similarityThreshold(0.30)     // Discard anything with a semantic match score below 75%
-                // .filterExpression("page_number == 1") <-- This is where we will add Arkadipta's metadata filters later!
+        // 2. Generate the Sparse Vector (Exact Keyword Matches)
+        KeywordSparseEncoderService.SparseVector sparseVector = sparseEncoder.encode(userQuery);
+
+        // 3. Build the Native Hybrid Query using Qdrant's Prefetch & RRF Engine
+        Points.QueryPoints hybridQuery = Points.QueryPoints.newBuilder()
+                .setCollectionName(COLLECTION_NAME)
+
+                // --- STREAM 1: Semantic Search ---
+                .addPrefetch(Points.PrefetchQuery.newBuilder()
+                        .setQuery(Points.Query.newBuilder()
+                                // Wrap the Vector in a VectorInput so Qdrant knows it's Dense
+                                .setNearest(Points.VectorInput.newBuilder()
+                                        .setDense(Points.DenseVector.newBuilder()
+                                                .addAllData(denseVector)
+                                                .build())
+                                        .build())
+                                .build())
+                        .setUsing("text-dense") // Target the Dense index
+                        .setLimit(10) // Grab top 10 conceptual matches
+                        .build())
+
+                // --- STREAM 2: Keyword Search ---
+                .addPrefetch(Points.PrefetchQuery.newBuilder()
+                        .setQuery(Points.Query.newBuilder()
+                                // Wrap the SparseVector in a VectorInput so Qdrant knows it's Sparse
+                                .setNearest(Points.VectorInput.newBuilder()
+                                        .setSparse(Points.SparseVector.newBuilder()
+                                                .addAllIndices(sparseVector.indices())
+                                                .addAllValues(sparseVector.values())
+                                                .build())
+                                        .build())
+                                .build())
+                        .setUsing("text-sparse") // Target the Sparse index
+                        .setLimit(10) // Grab top 10 exact keyword matches
+                        .build())
+
+                // --- THE FUSION ENGINE ---
+                .setQuery(Points.Query.newBuilder()
+                        // Fusion is a simple enum, no builder required
+                        .setFusion(Points.Fusion.RRF)
+                        .build())
+                .setLimit(5) // Final output size after fusion
+                .setWithPayload(Points.WithPayloadSelector.newBuilder().setEnable(true).build())
                 .build();
 
-        /*
-         * The vectorStore automatically:
-         * 1. Calls the OpenAI Embedding API to vectorize the 'userQuery'.
-         * 2. Executes a Cosine Similarity search in Qdrant.
-         * 3. Maps the raw JSON payloads back into Java Document objects.
-         */
-        return vectorStore.similaritySearch(request);
+        // 4. Execute the unified query natively on the database
+        try {
+            List<Points.ScoredPoint> results = qdrantClient.queryAsync(hybridQuery).get();
+
+            System.out.println("🔥 Hybrid Retrieval successful! Fused " + results.size() + " top chunks.");
+
+            // Extract the raw text content to hand off to the LLM
+            return results.stream()
+                    .map(point -> point.getPayloadMap().get("content").getStringValue())
+                    .toList();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to execute hybrid search in Qdrant", e);
+        }
     }
 }
